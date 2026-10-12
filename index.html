@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Treino da Bia</title>
+<meta name="description" content="Treino de calistenia de segunda a sexta, com checklist, sequência de dias, controle de carga e timer.">
+<meta name="theme-color" content="#EEF1F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1416" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Treino Bia">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: uma coluna de celular. Cabeçalho com a sequência e a fase, aviso da lombar, abas fixas dos dias,
+   cada bloco do treino como lista de checagem (com carga nos exercícios com halter), conclusão do dia
+   e um timer fixo no rodapé. */
+:root{
+  --chalk:#EEF1F0;      /* fundo: giz */
+  --plate:#FFFFFF;      /* superfícies */
+  --plate-2:#E2E7E5;    /* trilhos e seletor */
+  --iron:#172024;       /* texto */
+  --dust:#56646A;       /* texto secundário */
+  --rule:#D0D8D6;       /* linhas */
+  --pine:#136A56;       /* destaque */
+  --pine-ink:#FFFFFF;   /* texto sobre o destaque */
+  --pine-wash:#DCEDE6;  /* fundo das notas */
+  --amber:#9A5A00;      /* cuidado e sequência */
+  --amber-wash:#FBEBD2; /* fundo do aviso */
+  --done:#7C898D;       /* item feito */
+  --shadow:0 1px 3px rgba(23,32,36,.14);
+  --shadow-up:0 -4px 16px rgba(23,32,36,.08);
+  --font-display:'Big Shoulders Display','Arial Narrow','Roboto Condensed',sans-serif;
+  --font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --chalk:#0F1416; --plate:#172024; --plate-2:#212B30; --iron:#E5ECEA; --dust:#9AA8AD; --rule:#2A353A;
+    --pine:#4CC09E; --pine-ink:#05140F; --pine-wash:#123128; --amber:#F0AE4A; --amber-wash:#36270F; --done:#6B787D;
+    --shadow:0 1px 3px rgba(0,0,0,.5); --shadow-up:0 -4px 16px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --chalk:#0F1416; --plate:#172024; --plate-2:#212B30; --iron:#E5ECEA; --dust:#9AA8AD; --rule:#2A353A;
+  --pine:#4CC09E; --pine-ink:#05140F; --pine-wash:#123128; --amber:#F0AE4A; --amber-wash:#36270F; --done:#6B787D;
+  --shadow:0 1px 3px rgba(0,0,0,.5); --shadow-up:0 -4px 16px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);background:var(--chalk);color:var(--iron);font:400 16px/1.5 var(--font-body);overflow-x:hidden}
+.wrap{max-width:620px;margin-inline:auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+button,input{font:inherit;color:inherit}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 18px;border:1px solid transparent;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--pine);color:var(--pine-ink)}
+.btn.ghost{border-color:var(--rule);background:transparent;color:var(--iron)}
+.btn.wide{width:100%}
+.link{padding:6px 0;border:0;background:none;color:var(--pine);font-size:15px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* Cabeçalho */
+.hero{padding-block:24px 4px}
+.kicker{margin:0;font-size:13px;font-weight:600;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:var(--pine)}
+h1{margin:10px 0;font:800 clamp(48px,14vw,68px)/.9 var(--font-display);text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+.lede{margin:0 0 18px;max-width:40ch;color:var(--dust);font-size:17px}
+
+/* Sequência */
+.streak{display:grid;gap:12px;margin-bottom:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:14px;background:var(--plate)}
+.s-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.s-count{display:flex;flex:1 1 140px;align-items:center;gap:10px;min-width:0}
+.s-flame{flex:none;width:36px;height:36px;color:var(--amber)}
+.s-num{display:block;font:800 46px/.85 var(--font-display);font-variant-numeric:tabular-nums}
+.s-label{display:block;margin-top:4px;color:var(--dust);font-size:13px;font-weight:600;line-height:1.2}
+.s-week{display:grid;flex:1 1 196px;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:0;padding:0;list-style:none}
+.s-day{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--dust);font-size:12px;font-weight:600;line-height:1}
+.s-dot{position:relative;width:22px;height:22px;border:2px solid var(--rule);border-radius:50%;background:var(--plate)}
+.s-day.we .s-dot{border-style:dotted}
+.s-day.missed .s-dot{border-style:dashed;border-color:var(--done)}
+.s-day.today{color:var(--pine)}
+.s-day.today .s-dot{border-color:var(--pine)}
+.s-day.trained .s-dot{border-color:var(--pine);background:var(--pine)}
+.s-day.trained .s-dot::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--pine-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.s-meta{margin:0;color:var(--dust);font-size:13px;font-variant-numeric:tabular-nums}
+
+.phase{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--plate-2)}
+.phase button{flex:1;padding:11px 6px;border:0;border-radius:999px;background:transparent;color:var(--dust);font-size:15px;font-weight:600;cursor:pointer}
+.phase button[aria-pressed="true"]{background:var(--plate);color:var(--iron);box-shadow:var(--shadow)}
+.restday{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--pine-wash);font-size:15px}
+
+/* Aviso */
+.care{margin-top:18px;border-radius:14px;background:var(--amber-wash)}
+.care summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;list-style:none;cursor:pointer}
+.care summary::-webkit-details-marker{display:none}
+.care h2{margin:0;font:800 23px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.chev{color:var(--amber);font-size:14px;font-weight:700;white-space:nowrap}
+.care:not([open]) .when-open,.care[open] .when-closed{display:none}
+.care ul{display:grid;gap:10px;margin:0;padding:0 16px 16px;list-style:none}
+.care li{position:relative;padding-left:20px;font-size:15px}
+.care li::before{content:"";position:absolute;left:3px;top:.55em;width:7px;height:7px;border-radius:2px;background:var(--amber);transform:rotate(45deg)}
+.care strong{font-weight:700}
+
+/* Abas dos dias */
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-top:20px;padding-block:10px;border-bottom:1px solid var(--rule);background:var(--chalk)}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:9px 2px 8px;border:1px solid var(--rule);border-radius:12px;background:var(--plate);cursor:pointer}
+.tab .d{font:800 20px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.tab .f{max-width:100%;padding-inline:3px;overflow:hidden;color:var(--dust);font-size:11px;line-height:1.15;white-space:nowrap;text-overflow:ellipsis}
+.tab[aria-selected="true"]{border-color:var(--pine);background:var(--pine);color:var(--pine-ink)}
+.tab[aria-selected="true"] .f{color:var(--pine-ink)}
+.tab.today::after{content:"";position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+/* Dia */
+.dhead{padding-block:22px 4px}
+.dname{margin:0;font-size:13px;font-weight:600;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:var(--pine)}
+.dhead h2{margin:6px 0 8px;font:800 clamp(32px,9vw,40px)/.95 var(--font-display);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.focus{margin:0 0 14px;max-width:52ch;color:var(--dust)}
+.prog{display:flex;align-items:center;gap:12px}
+.track{flex:1;min-width:0;height:8px;overflow:hidden;border-radius:999px;background:var(--plate-2)}
+.fill{display:block;width:0;height:100%;border-radius:999px;background:var(--pine);transition:width .25s ease}
+.count{color:var(--dust);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.reset{padding:6px 0;border:0;background:none;color:var(--dust);font-size:14px;font-weight:500;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;cursor:pointer}
+
+.block{margin-top:26px}
+.bhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:7px;border-bottom:2px solid var(--iron)}
+.bhead h3{margin:0;font:800 24px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.mins{color:var(--dust);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{margin:12px 0 4px;padding:10px 12px;border-radius:10px;background:var(--pine-wash);font-size:14px}
+.items{margin:0;padding:0;list-style:none}
+.item{display:flex;gap:12px;padding-block:14px;border-bottom:1px solid var(--rule)}
+.check{position:relative;flex:none;width:30px;height:30px;margin-top:1px}
+.check input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.box{display:block;width:30px;height:30px;border:2px solid var(--rule);border-radius:9px;background:var(--plate);transition:background-color .15s,border-color .15s}
+.check input:focus-visible + .box{outline:2px solid var(--pine);outline-offset:2px}
+.item.done .box{border-color:var(--pine);background:var(--pine)}
+.item.done .box::after{content:"";display:block;width:8px;height:15px;margin:3px 0 0 9px;border:solid var(--pine-ink);border-width:0 3px 3px 0;transform:rotate(45deg)}
+.body{flex:1;min-width:0}
+.row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px}
+.name{font-size:17px;font-weight:600;line-height:1.3}
+.dose{color:var(--pine);font:700 18px/1.2 var(--font-display);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.how{margin:4px 0 0;color:var(--dust);font-size:15px}
+.alt{margin-top:8px}
+.alt summary{display:inline-block;color:var(--amber);font-size:14px;font-weight:600;list-style:none;cursor:pointer}
+.alt summary::-webkit-details-marker{display:none}
+.alt summary::before{content:"+ "}
+.alt[open] summary::before{content:"– "}
+.alt p{margin:6px 0 0;font-size:14px}
+.item.done .name{color:var(--done);text-decoration:line-through;text-decoration-thickness:1.5px}
+.item.done .how,.item.done .dose{color:var(--done)}
+
+/* Carga */
+.load{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px}
+.l-label{color:var(--dust);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.l-ctrl{display:inline-flex;align-items:stretch;overflow:hidden;border:1px solid var(--rule);border-radius:10px;background:var(--plate)}
+.l-btn{width:40px;height:40px;border:0;background:var(--plate-2);font-size:20px;font-weight:700;line-height:1;cursor:pointer}
+.l-input{width:56px;height:40px;border:0;background:transparent;color:var(--iron);text-align:center;font:700 20px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.l-unit{color:var(--iron);font-size:15px;font-weight:600}
+.l-note{flex-basis:100%;color:var(--dust);font-size:13px}
+.l-note:empty{display:none}
+
+/* Conclusão do dia */
+.finish{display:grid;justify-items:center;gap:8px;margin-top:28px;text-align:center}
+.f-note{margin:0;max-width:40ch;color:var(--dust);font-size:14px}
+.f-done{display:flex;align-items:center;gap:10px;margin:0;color:var(--pine);font:800 24px/1.1 var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+.f-check{position:relative;flex:none;width:28px;height:28px;border-radius:50%;background:var(--pine)}
+.f-check::after{content:"";position:absolute;left:10px;top:5px;width:7px;height:13px;border:solid var(--pine-ink);border-width:0 3px 3px 0;transform:rotate(45deg)}
+
+/* Como evoluir */
+.evolve{margin-top:36px;padding-block:18px 0;border-top:2px solid var(--iron)}
+.evolve h2{margin:0 0 12px;font:800 24px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.evolve ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.evolve li{font-size:15px}
+.evolve strong{display:block;font-weight:700}
+.foot{padding-block:22px 0;text-align:center}
+.spacer{height:calc(104px + env(safe-area-inset-bottom,0px))}
+
+/* Timer */
+.timer{position:fixed;left:0;right:0;bottom:0;z-index:10;padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--rule);background:var(--plate);box-shadow:var(--shadow-up)}
+.tin{display:flex;align-items:center;gap:12px}
+.tread{display:flex;flex-direction:column;min-width:64px}
+.tread small{color:var(--dust);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.tread output{font:800 30px/1 var(--font-display);font-variant-numeric:tabular-nums;text-transform:uppercase}
+.timer.running output{color:var(--pine)}
+.timer.finished output{color:var(--amber)}
+.tbtns{display:grid;flex:1;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;min-width:0}
+.tbtns button{padding-block:11px;border:1px solid var(--rule);border-radius:10px;background:var(--plate-2);font-size:14px;font-weight:600;cursor:pointer}
+.tbtns .stop{background:transparent;color:var(--dust)}
+
+/* Instalar como app */
+.install{position:fixed;left:0;right:0;bottom:0;z-index:20;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--rule);border-radius:18px 18px 0 0;background:var(--plate);box-shadow:var(--shadow-up);animation:rise .25s ease-out}
+@keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.i-in{display:flex;align-items:flex-start;gap:14px}
+.i-icon{flex:none;width:52px;height:52px}
+.i-body{flex:1;min-width:0}
+.install h2{margin:0 0 4px;font:800 24px/1 var(--font-display);text-transform:uppercase;letter-spacing:.02em}
+.install p{margin:0;color:var(--dust);font-size:15px}
+.i-steps{display:grid;gap:6px;margin:10px 0 0;padding-left:20px;font-size:15px}
+.i-steps svg{width:17px;height:17px;vertical-align:-3px;color:var(--pine)}
+.i-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.i-actions .btn{flex:1 1 130px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;width:max-content;max-width:calc(100% - 32px);padding:12px 16px;border-radius:12px;background:var(--iron);color:var(--chalk);box-shadow:var(--shadow);font-size:15px;font-weight:600;text-align:center;transform:translateX(-50%)}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <p class="kicker">Calistenia · seg a sex · até 60 min</p>
+  <h1>Treino da Bia</h1>
+  <p class="lede">Shape slim e mais fôlego, com peso moderado, muitas repetições e cuidado com a lombar.</p>
+
+  <section class="streak" aria-label="Sequência de treinos">
+    <div class="s-top">
+      <div class="s-count">
+        <svg class="s-flame" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.4 2.2c.9 3.2-.7 5.3-2.3 7.1C8.6 11 7.2 12.6 7.2 15.1c0 3.3 2.2 6 4.9 6s4.9-2.7 4.9-6c0-2.2-.9-3.9-2-5.3-.2 1.3-.8 2.4-1.8 3 .3-3.4-.3-6.9-.8-10.6z"/></svg>
+        <div><span class="s-num" id="s-num">0</span><span class="s-label" id="s-label">dias de treino seguidos</span></div>
+      </div>
+      <ol class="s-week" id="s-week" aria-label="Esta semana"></ol>
+    </div>
+    <p class="s-meta" id="s-meta">Fim de semana não quebra a sequência.</p>
+  </section>
+
+  <div class="phase" role="group" aria-label="Fase do treino">
+    <button type="button" id="fase-1" data-phase="f1" aria-pressed="true">Semanas 1 e 2</button>
+    <button type="button" id="fase-2" data-phase="f2" aria-pressed="false">Semana 3 em diante</button>
+  </div>
+  <p class="restday" id="restday" hidden>Hoje é dia de descanso. Se quiser, faz uma caminhada leve de 20 a 40 minutos. Abaixo está o treino de segunda.</p>
+
+  <details class="care" id="care" open>
+    <summary><h2>Antes de começar</h2><span class="chev"><span class="when-open">Esconder</span><span class="when-closed">Ver</span></span></summary>
+    <ul>
+      <li><strong>A lombar manda.</strong> Desconforto leve que passa logo, tudo bem. Se a dor aumentar durante o treino ou piorar no dia seguinte, troca pela versão mais fácil ou pula o exercício.</li>
+      <li><strong>Para e procura um médico</strong> se a dor descer pra perna, ou se aparecer formigamento, dormência ou perda de força.</li>
+      <li><strong>A roda abdominal fica de fora por enquanto.</strong> Ela força muito a lombar. Entra depois da consulta, quando não houver mais dor.</li>
+      <li><strong>Nada de saltos por enquanto.</strong> Todo exercício daqui tem versão sem impacto.</li>
+      <li><strong>Os dois lados sempre iguais.</strong> Nos exercícios de um lado só, faz o mesmo número de repetições dos dois lados, começando pelo lado mais fraco.</li>
+      <li><strong>Ritmo dos circuitos:</strong> dá pra falar frases curtas. Se o coração disparar demais ou bater ansiedade, diminui o ritmo e faz a respiração 4-6.</li>
+      <li><strong>Leva este treino na consulta</strong> pro médico ou fisio ajustar o que precisar.</li>
+    </ul>
+  </details>
+</header>
+
+<div id="tabs-anchor"></div>
+<nav class="tabbar" aria-label="Dias da semana">
+  <div class="wrap"><div class="tabs" id="tabs" role="tablist"></div></div>
+</nav>
+
+<main class="wrap" id="day" role="tabpanel"></main>
+
+<div class="wrap finish" id="finish"></div>
+
+<section class="wrap" aria-labelledby="evolve-title">
+  <div class="evolve">
+    <h2 id="evolve-title">Como evoluir</h2>
+    <ul>
+      <li><strong>Semanas 1 e 2</strong>Menos séries e voltas, com foco em aprender os movimentos. Na terceira semana, troca a fase no seletor lá em cima.</li>
+      <li><strong>Hora de subir</strong>Quando fizer todas as séries no máximo de repetições e com boa técnica, aumenta um pouco o peso no campo de carga ou passa pra versão mais difícil.</li>
+      <li><strong>Shape slim</strong>Peso moderado e muitas repetições deixam o corpo firme e com fôlego, sem ganhar volume. O quanto ele fica definido depende mais da alimentação do que do treino; se der, vale acompanhar com nutricionista.</li>
+      <li><strong>Fim de semana</strong>Descanso, e não quebra a sequência. Uma caminhada leve é bem-vinda.</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="wrap foot">
+  <button type="button" class="link" id="install-link" hidden>Baixar como app</button>
+</footer>
+<div class="spacer" aria-hidden="true"></div>
+
+<div class="timer" id="timer" role="region" aria-label="Timer de descanso">
+  <div class="wrap tin">
+    <div class="tread"><small>Timer</small><output id="tdisplay">0:00</output></div>
+    <div class="tbtns">
+      <button type="button" id="t20" data-sec="20">20s</button>
+      <button type="button" id="t40" data-sec="40">40s</button>
+      <button type="button" id="t60" data-sec="60">60s</button>
+      <button type="button" id="t90" data-sec="90">90s</button>
+      <button type="button" id="tstop" class="stop">Parar</button>
+    </div>
+  </div>
+</div>
+
+<div class="install" id="install" role="dialog" aria-labelledby="install-title" aria-describedby="install-text" hidden>
+  <div class="wrap i-in">
+    <svg class="i-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <rect width="64" height="64" rx="14" fill="#136A56"/>
+      <g transform="rotate(-35 32 32)">
+        <rect x="17.8" y="29.8" width="28.4" height="4.4" rx="2.2" fill="#EEF1F0"/>
+        <rect x="15.4" y="19.3" width="6.6" height="25.4" rx="1.8" fill="#EEF1F0"/>
+        <rect x="42" y="19.3" width="6.6" height="25.4" rx="1.8" fill="#EEF1F0"/>
+        <rect x="9.1" y="23.2" width="5.1" height="17.6" rx="1.5" fill="#F0AE4A"/>
+        <rect x="49.8" y="23.2" width="5.1" height="17.6" rx="1.5" fill="#F0AE4A"/>
+      </g>
+    </svg>
+    <div class="i-body">
+      <h2 id="install-title">Baixar como app</h2>
+      <p id="install-text">Fica na tela inicial, abre em tela cheia e funciona mesmo sem internet.</p>
+      <ol class="i-steps" id="steps-ios" hidden>
+        <li>Se abriu pelo WhatsApp ou Instagram, primeiro abre o link no Safari.</li>
+        <li>Toca no botão Compartilhar <svg viewBox="0 0 24 24" aria-label="(quadrado com seta pra cima)" role="img"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H5v11h14V10h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> do navegador.</li>
+        <li>Escolhe <b>Adicionar à Tela de Início</b>.</li>
+      </ol>
+      <ol class="i-steps" id="steps-generic" hidden>
+        <li>Se abriu por dentro do WhatsApp, toca no menu <b>⋮</b> e escolhe <b>Abrir no Chrome</b>.</li>
+        <li>No menu <b>⋮</b> do navegador, escolhe <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</li>
+      </ol>
+      <div class="i-actions">
+        <button type="button" class="btn primary" id="install-go" hidden>Instalar</button>
+        <button type="button" class="btn ghost" id="install-later">Agora não</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const store = {
+    get(key, fallback) {
+      try { const raw = localStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw); }
+      catch (e) { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    }
+  };
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+
+  /* Datas sempre no horário local do celular (nunca em UTC) */
+  const pad = n => String(n).padStart(2, '0');
+  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const atNoon = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+  const addDays = (d, n) => { const x = atNoon(d); x.setDate(x.getDate() + n); return x; };
+  const fromKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+  const isWeekend = d => d.getDay() === 0 || d.getDay() === 6;
+  const todayKey = () => dateKey(new Date());
+
+  /* Exercícios que se repetem em vários dias */
+  const X = {
+    marcha: { name: 'Marcha no lugar com braços', dose: '2 min', how: 'Ritmo leve, balançando os braços, só pra esquentar o corpo.' },
+    gato: { name: 'Gato-camelo', dose: '8 repetições', how: 'Em quatro apoios, arredonda as costas e depois estende devagar, sem forçar o fim do movimento.' },
+    quadril: { name: 'Círculos de quadril', dose: '8 pra cada lado', how: 'Em pé, com as mãos na cintura, faz círculos grandes e lentos.' },
+    livro: { name: 'Livro aberto', dose: '8 de cada lado', how: 'Deitada de lado com os joelhos dobrados, abre o braço de cima pro outro lado acompanhando com o olhar. Os joelhos não saem do lugar.' },
+    ponte: { name: 'Ponte de glúteo', dose: '12 repetições', how: 'Deitada com os joelhos dobrados, sobe o quadril apertando o glúteo, sem arquear a lombar.' },
+    agach: { name: 'Agachamento até a cadeira', dose: '10 repetições', how: 'Sem peso. Encosta de leve na cadeira e sobe, com o peito aberto.' },
+    bracos: { name: 'Círculos de braço', dose: '10 pra frente e 10 pra trás', how: 'Braços abertos na altura dos ombros, círculos médios e soltos.' },
+    afast: { name: 'Afastamento com elástico', dose: '15 repetições', how: 'Braços esticados na frente do peito. Abre o elástico juntando as escápulas, sem subir os ombros.' },
+    pend: { name: 'Pendurada ativa na barra', dose: '2 × 15–20s', how: 'Pendurada, puxa os ombros pra baixo sem dobrar os cotovelos. Se cansar rápido, deixa os pés apoiados numa cadeira.' },
+    crianca: { name: 'Postura da criança', dose: '45s', how: 'Sentada sobre os calcanhares, estica os braços à frente no chão. Se incomodar a lombar, pula este.' },
+    peitoral: { name: 'Alongamento de peitoral na porta', dose: '30s de cada lado', how: 'Antebraço apoiado no batente da porta, gira o corpo devagar pro lado oposto.' },
+    deadbug: { name: 'Dead bug', dose: '8 de cada lado', how: 'Deitada, braços pra cima e joelhos dobrados no ar. Estica um braço e a perna oposta devagar, com a lombar encostada no chão o tempo todo.', easier: 'Mexe só as pernas, encostando um calcanhar de cada vez no chão.', harder: 'Segurando um halter leve com as duas mãos.' },
+    pranchaLat: { name: 'Prancha lateral', dose: '20–30s de cada lado', how: 'Apoiada no antebraço, com o corpo em linha reta. Faz o mesmo tempo dos dois lados, mesmo que um seja mais fácil.', easier: 'Com os joelhos dobrados no chão.', harder: 'Aumenta até 45s de cada lado.' },
+    perdigueiro: { name: 'Perdigueiro', dose: '8 de cada lado', how: 'Em quatro apoios, estica o braço e a perna opostos, segura 2 segundos e volta. O quadril fica parado, sem girar.', easier: 'Estica só a perna ou só o braço.' }
+  };
+  const resp = d => ({ name: 'Respiração 4-6', dose: d, how: 'Inspira pelo nariz contando até 4 e solta pela boca contando até 6. Desacelera o corpo e ajuda a acalmar a cabeça.' });
+  const flexor = d => ({ name: 'Alongamento do flexor do quadril', dose: d, how: 'Meio ajoelhada, com um joelho no chão. Leva o quadril pra frente devagar, sem arquear a lombar.' });
+  const posterior = d => ({ name: 'Posterior de coxa com elástico', dose: d, how: 'Deitada, com o elástico no pé, sobe a perna esticada até sentir alongar, sem puxar com força.' });
+  const joelhos = d => ({ name: 'Joelhos ao peito', dose: d, how: 'Deitada, abraça os joelhos e balança de leve de um lado pro outro. Costuma aliviar a lombar.' });
+
+  const AQ_INF = [X.marcha, X.gato, X.quadril, X.livro, X.ponte, X.agach];
+  const AQ_SUP = [X.marcha, X.gato, X.livro, X.bracos, X.afast, X.pend];
+  const AQ_TOTAL = [X.marcha, X.gato, X.livro, X.ponte, X.afast, X.agach];
+  const CALMA = [resp('2 min'), flexor('30s de cada lado'), posterior('30s de cada perna'), joelhos('45s'), X.crianca];
+  const CALMA_SUP = [resp('2 min'), X.peitoral, flexor('30s de cada lado'), joelhos('45s'), X.crianca];
+
+  const FORCA_NOTE = 'Descanso de 45 a 60s entre as séries. Carga: as 2 ou 3 últimas repetições ficam difíceis, mas sem perder a técnica.';
+  const CORE_NOTE = { f1: '2 voltas, com 30s de descanso entre os exercícios.', f2: '3 voltas, com 30s de descanso entre os exercícios.' };
+
+  /* load: carga em kg. "kg cada" = um halter em cada mão. optional = começa sem peso. */
+  const DAYS = [
+    { key: 'seg', short: 'Seg', tab: 'Pernas', name: 'Segunda', title: 'Pernas + core',
+      focus: 'Força nas pernas e no glúteo, com um bloco de core pra proteger a lombar.',
+      blocks: [
+        { title: 'Aquecimento', min: '10 min', items: AQ_INF },
+        { title: 'Força', min: { f1: '20 min', f2: '28 min' }, note: FORCA_NOTE, items: [
+          { name: 'Agachamento goblet até a cadeira', dose: { f1: '2 × 12–15', f2: '3 × 12–15' }, how: 'Halter na frente do peito (comece com 4 a 8 kg). Senta de leve na cadeira e sobe empurrando o chão, com as costas retas.', easier: 'Sem peso.', harder: 'Sem a cadeira, ou com mais peso.', load: { id: 'goblet-cadeira', def: 6, unit: 'kg' } },
+          { name: 'Afundo parado com apoio', dose: { f1: '2 × 10 cada perna', f2: '3 × 10–12 cada perna' }, how: 'Um pé à frente e o outro atrás, segurando numa parede ou cadeira. Desce reto, como um elevador, sem inclinar o tronco. Começa pela perna mais fraca.', easier: 'Desce só até a metade.', harder: 'Com um halter em cada mão.', load: { id: 'afundo-parado', def: 0, unit: 'kg cada', optional: true } },
+          { name: 'Elevação de quadril com halter', dose: { f1: '2 × 12–15', f2: '3 × 12–15' }, how: 'Deitada com os joelhos dobrados e o halter apoiado no quadril. Sobe apertando o glúteo até o corpo formar uma linha, sem arquear a lombar no alto.', easier: 'Sem peso.', harder: 'Com uma perna só, 10 de cada lado.', load: { id: 'elevacao-quadril', def: 8, unit: 'kg' } },
+          { name: 'Caminhada lateral com elástico', dose: { f1: '2 × 12 passos pra cada lado', f2: '3 × 12 passos pra cada lado' }, how: 'Elástico logo acima dos joelhos, meio agachada. Passos curtos pro lado, com os joelhos apontando pra fora. Fortalece o glúteo que estabiliza o quadril.' },
+          { name: 'Elevação de panturrilha', dose: { f1: '2 × 15–20', f2: '3 × 15–20' }, how: 'Em pé, com a mão na parede. Sobe na ponta dos pés e desce devagar.', harder: 'Segurando um halter, ou com uma perna só.', load: { id: 'panturrilha', def: 0, unit: 'kg', optional: true } }
+        ] },
+        { title: 'Core', min: { f1: '8 min', f2: '11 min' }, note: CORE_NOTE, items: [X.deadbug, X.pranchaLat, X.perdigueiro] },
+        { title: 'Cardio', min: '6 min', items: [
+          { name: 'Subida no degrau alternada', dose: '5 min', how: 'Num degrau baixo e firme. Ritmo em que dá pra falar frases curtas.' }
+        ] },
+        { title: 'Volta à calma', min: '7 min', items: CALMA }
+      ] },
+    { key: 'ter', short: 'Ter', tab: 'Superior', name: 'Terça', title: 'Superiores: empurrar e puxar',
+      focus: 'Costas, peito, ombros e braços, com peso leve e muitas repetições.',
+      blocks: [
+        { title: 'Aquecimento', min: '10 min', items: AQ_SUP },
+        { title: 'Força', min: { f1: '25 min', f2: '33 min' }, note: FORCA_NOTE, items: [
+          { name: 'Barra com elástico', dose: { f1: '2 × 5–8', f2: '3 × 6–8' }, how: 'Elástico preso na barra, com o pé ou o joelho dentro dele. Puxa até o queixo passar da barra e desce controlando, sem balançar.', easier: 'Negativa: sobe com ajuda de uma cadeira e desce devagar contando até 4 (4 a 5 repetições).', harder: 'Elástico mais fino, até conseguir sem elástico.' },
+          { name: 'Flexão inclinada', dose: { f1: '2 × 10–15', f2: '3 × 10–15' }, how: 'Mãos numa mesa firme, sofá ou banco. Corpo reto da cabeça ao calcanhar, com a barriga firme.', easier: 'Na parede.', harder: 'Apoio mais baixo, até chegar no chão (primeiro de joelhos, depois completa).' },
+          { name: 'Remada unilateral apoiada', dose: { f1: '2 × 12 de cada lado', f2: '3 × 12 de cada lado' }, how: 'Mão e joelho apoiados numa cadeira ou banco, costas retas. Puxa o halter (5 a 10 kg) em direção ao quadril.', harder: 'Mais peso.', load: { id: 'remada-unilateral', def: 6, unit: 'kg' } },
+          { name: 'Supino no chão com halteres', dose: { f1: '2 × 12–15', f2: '3 × 12–15' }, how: 'Deitada no chão com os joelhos dobrados, o que protege a lombar. Empurra os halteres (4 a 8 kg cada) pra cima e desce até o cotovelo tocar o chão.', load: { id: 'supino-chao', def: 5, unit: 'kg cada' } },
+          { name: 'Elevação lateral', dose: { f1: '2 × 12–15', f2: '3 × 12–15' }, how: 'Halteres leves (1 a 3 kg). Sobe os braços até a altura dos ombros sem dar impulso com o corpo. Se ficar em pé incomodar a lombar, faz sentada.', load: { id: 'elevacao-lateral', def: 2, unit: 'kg cada' } },
+          { name: 'Afastamento com elástico', dose: { f1: '2 × 15–20', f2: '3 × 15–20' }, how: 'Ajuda na postura. Abre o elástico juntando as escápulas, sem subir os ombros.' },
+          { name: 'Bíceps + tríceps com elástico', dose: '2 × 12–15 de cada', how: 'Opcional, se sobrar tempo. Faz um logo depois do outro.' }
+        ] },
+        { title: 'Cardio', min: '8 min', items: [
+          { name: 'Boxe de sombra', dose: '4 × 1 min', how: 'Socos no ar alternando os braços, com a base firme e sem pular. Entre as rodadas, 1 min de marcha leve. Bom pra descarregar a tensão.' }
+        ] },
+        { title: 'Volta à calma', min: '7 min', items: CALMA_SUP }
+      ] },
+    { key: 'qua', short: 'Qua', tab: 'Cardio', name: 'Quarta', title: 'Circuito leve + mobilidade',
+      focus: 'Fôlego sem impacto e um bloco grande de mobilidade pra soltar quadril e coluna.',
+      blocks: [
+        { title: 'Aquecimento', min: '8 min', items: AQ_INF },
+        { title: 'Circuito', min: { f1: '27 min', f2: '34 min' },
+          note: { f1: '40s de exercício e 20s de pausa, 4 voltas, com 1 min de descanso entre elas. O ritmo certo é aquele em que dá pra falar frases curtas. Se preferir, troca o circuito por 30 a 40 min de caminhada rápida.',
+                  f2: '40s de exercício e 20s de pausa, 5 voltas, com 1 min de descanso entre elas. O ritmo certo é aquele em que dá pra falar frases curtas. Se preferir, troca o circuito por 30 a 40 min de caminhada rápida.' },
+          items: [
+            { name: 'Polichinelo sem salto', dose: '40s', how: 'Passo pro lado abrindo os braços, volta e troca de lado. Sem pular.' },
+            { name: 'Agachamento até a cadeira', dose: '40s', how: 'Sem peso ou com halteres leves, em ritmo constante.', load: { id: 'agachamento-circuito', def: 0, unit: 'kg cada', optional: true } },
+            { name: 'Remada com elástico', dose: '40s', how: 'Elástico preso na barra ou na porta, na altura do peito. Puxa levando os cotovelos pra trás.' },
+            { name: 'Escalador inclinado', dose: '40s', how: 'Mãos num sofá ou banco. Leva um joelho de cada vez em direção ao peito, sem pressa e com a barriga firme.' },
+            { name: 'Subida no degrau alternada', dose: '40s', how: 'Degrau baixo e firme, alternando a perna que sobe primeiro.' },
+            { name: 'Boxe de sombra', dose: '40s', how: 'Socos no ar alternando os braços, sem pular.' }
+          ] },
+        { title: 'Mobilidade', min: '15 min', items: [
+          { name: 'Gato-camelo', dose: '10 repetições', how: X.gato.how },
+          X.livro,
+          { name: '90/90 de quadril', dose: '8 de cada lado', how: 'Sentada no chão com as duas pernas dobradas em 90°, gira os joelhos de um lado pro outro devagar. Pode apoiar as mãos atrás.' },
+          flexor('45s de cada lado'),
+          posterior('45s de cada perna'),
+          joelhos('1 min'),
+          resp('3 min')
+        ] }
+      ] },
+    { key: 'qui', short: 'Qui', tab: 'Completo', name: 'Quinta', title: 'Corpo inteiro',
+      focus: 'Um pouco de tudo, com exercícios de um lado só pra equilibrar os dois lados do corpo.',
+      blocks: [
+        { title: 'Aquecimento', min: '10 min', items: AQ_TOTAL },
+        { title: 'Força', min: { f1: '25 min', f2: '33 min' }, note: FORCA_NOTE, items: [
+          { name: 'Subida no degrau com halteres', dose: { f1: '2 × 10 cada perna', f2: '3 × 10 cada perna' }, how: 'Degrau baixo e firme. Sobe empurrando com a perna da frente, sem dar impulso com a de trás. Começa pela perna mais fraca.', easier: 'Sem peso.', harder: 'Degrau mais alto ou mais peso.', load: { id: 'subida-degrau', def: 3, unit: 'kg cada' } },
+          { name: 'Barra negativa', dose: { f1: '2 × 4–5', f2: '3 × 4–6' }, how: 'Sobe com ajuda de uma cadeira até o queixo passar da barra e desce o mais devagar que conseguir, contando até 4.', easier: 'Pendurada ativa, 3 × 20s.', harder: 'Barra completa, com ou sem elástico.' },
+          { name: 'Flexão no seu nível', dose: { f1: '2 × 8–12', f2: '3 × 8–12' }, how: 'Usa a versão em que dá pra fazer todas as repetições com o corpo reto: parede, inclinada, de joelhos ou completa.' },
+          { name: 'Ponte de glúteo com uma perna', dose: { f1: '2 × 10 de cada lado', f2: '3 × 10–12 de cada lado' }, how: 'Uma perna dobrada com o pé no chão e a outra esticada pro alto. Sobe sem deixar o quadril cair pro lado.', easier: 'Com as duas pernas.' },
+          { name: 'Remada com elástico em pé', dose: { f1: '2 × 12–15', f2: '3 × 12–15' }, how: 'Elástico preso na barra ou na porta, na altura do peito. Puxa juntando as escápulas, com o tronco parado.' },
+          { name: 'Caminhada com um halter só', dose: { f1: '2 × 30s de cada lado', f2: '3 × 40s de cada lado' }, how: 'Halter numa mão só (6 a 10 kg). Anda devagar com o corpo reto, sem tombar pro lado do peso. Se a lombar reclamar, diminui o peso.', load: { id: 'caminhada-halter', def: 6, unit: 'kg' } },
+          { name: 'Prancha frontal', dose: { f1: '2 × 20–30s', f2: '3 × 30–40s' }, how: 'Antebraços no chão, barriga firme e glúteo contraído. Para antes de a lombar afundar.', easier: 'Com os joelhos no chão.' }
+        ] },
+        { title: 'Cardio', min: '8 min', items: [
+          { name: 'Marcha intervalada', dose: '8 × 30s + 30s', how: 'Marcha no lugar: 30s rápido, subindo bem os joelhos sem pular, e 30s leve.' }
+        ] },
+        { title: 'Volta à calma', min: '7 min', items: CALMA }
+      ] },
+    { key: 'sex', short: 'Sex', tab: 'Circuito', name: 'Sexta', title: 'Circuito + core',
+      focus: 'Circuito de corpo inteiro pra puxar o fôlego e um bloco de core caprichado.',
+      blocks: [
+        { title: 'Aquecimento', min: '8 min', items: AQ_TOTAL },
+        { title: 'Circuito', min: { f1: '20 min', f2: '27 min' },
+          note: { f1: '40s de exercício e 20s de pausa, 3 voltas, com 1 min de descanso entre elas. Ritmo em que dá pra falar frases curtas.',
+                  f2: '40s de exercício e 20s de pausa, 4 voltas, com 1 min de descanso entre elas. Ritmo em que dá pra falar frases curtas.' },
+          items: [
+            { name: 'Agachamento goblet', dose: '40s', how: 'Halter leve na frente do peito, descendo até onde a lombar continua reta.', load: { id: 'goblet-circuito', def: 4, unit: 'kg' } },
+            { name: 'Flexão inclinada', dose: '40s', how: 'Mãos numa mesa firme ou banco, com o corpo reto.' },
+            { name: 'Afundo pra trás alternado', dose: '40s', how: 'Dá um passo pra trás e desce, alternando as pernas. Se precisar, segura numa cadeira.' },
+            { name: 'Remada com elástico', dose: '40s', how: 'Puxa levando os cotovelos pra trás e juntando as escápulas.' },
+            { name: 'Polichinelo sem salto', dose: '40s', how: 'Passo pro lado abrindo os braços, sem pular.' },
+            { name: 'Ponte de glúteo', dose: '40s', how: 'Sobe apertando o glúteo, sem arquear a lombar.' }
+          ] },
+        { title: 'Core', min: { f1: '8 min', f2: '12 min' }, note: CORE_NOTE, items: [
+          { name: 'Pallof press com elástico', dose: '10 de cada lado', how: 'Elástico preso de lado, na altura do peito. Segura com as duas mãos junto ao peito e estica os braços pra frente sem deixar o corpo girar. Volta devagar.' },
+          X.deadbug, X.pranchaLat, X.perdigueiro
+        ] },
+        { title: 'Volta à calma', min: '8 min', items: [resp('3 min'), flexor('30s de cada lado'), posterior('30s de cada perna'), joelhos('45s'), X.crianca] }
+      ] }
+  ];
+
+  const LOADS = {};
+  DAYS.forEach(d => d.blocks.forEach(b => b.items.forEach(it => { if (it.load) LOADS[it.load.id] = it.load; })));
+
+  const KEY = {
+    fase: 'treino-bia:fase',
+    feitos: 'treino-bia:feitos',
+    historico: 'treino-bia:historico',
+    cargas: 'treino-bia:cargas',
+    aviso: 'treino-bia:aviso-aberto',
+    instalacao: 'treino-bia:instalacao',
+    inicio: 'treino-bia:inicio'
+  };
+
+  /* Estado salvo no celular */
+  let phase = store.get(KEY.fase, 'f1');
+  if (phase !== 'f1' && phase !== 'f2') phase = 'f1';
+
+  const freshFeitos = () => ({ date: todayKey(), days: {} });
+  let feitos = store.get(KEY.feitos, null);
+  if (!isObj(feitos) || feitos.date !== todayKey() || !isObj(feitos.days)) feitos = freshFeitos();
+
+  let history = store.get(KEY.historico, {});
+  if (!isObj(history)) history = {};
+  Object.keys(history).forEach(k => { if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) delete history[k]; });
+
+  let cargas = store.get(KEY.cargas, {});
+  if (!isObj(cargas)) cargas = {};
+
+  // Primeiro dia de uso: os dias antes disso não aparecem como "sem treino".
+  let inicio = store.get(KEY.inicio, null);
+  if (typeof inicio !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(inicio)) {
+    inicio = todayKey();
+    store.set(KEY.inicio, inicio);
+  }
+  const startKey = () => {
+    const first = Object.keys(history).sort()[0];
+    return first && first < inicio ? first : inicio;
+  };
+
+  /* Elementos */
+  const $ = id => document.getElementById(id);
+  const tabsEl = $('tabs');
+  const dayEl = $('day');
+  const finishEl = $('finish');
+  const anchorEl = $('tabs-anchor');
+  const restEl = $('restday');
+  const toastEl = $('toast');
+
+  let todayIdx = -1;
+  function computeToday() {
+    const wd = new Date().getDay();
+    todayIdx = wd >= 1 && wd <= 5 ? wd - 1 : -1;
+    restEl.hidden = todayIdx >= 0;
+  }
+  computeToday();
+  const hashIdx = DAYS.findIndex(d => '#' + d.key === location.hash);
+  let current = hashIdx >= 0 ? hashIdx : (todayIdx >= 0 ? todayIdx : 0);
+
+  const pick = v => (v && typeof v === 'object') ? v[phase] : v;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3200);
+  }
+
+  /* ---------- Sequência ---------- */
+  // Conta dias de treino seguidos. Sábado e domingo sem treino não quebram;
+  // dia de semana sem treino quebra, menos o de hoje (ainda dá tempo).
+  function currentStreak(hist, now) {
+    const keys = Object.keys(hist).sort();
+    if (!keys.length) return 0;
+    const first = keys[0];
+    let d = atNoon(now);
+    let count = 0;
+    for (let i = 0; i < 4000; i++) {
+      const k = dateKey(d);
+      if (hist[k]) count++;
+      else if (i > 0 && !isWeekend(d)) break;
+      if (k <= first) break;
+      d = addDays(d, -1);
+    }
+    return count;
+  }
+
+  function bestStreak(hist, now) {
+    const keys = Object.keys(hist).sort();
+    if (!keys.length) return 0;
+    const end = dateKey(now);
+    let d = fromKey(keys[0]);
+    let run = 0;
+    let best = 0;
+    for (let i = 0; i < 4000; i++) {
+      const k = dateKey(d);
+      if (k > end) break;
+      if (hist[k]) { run++; if (run > best) best = run; }
+      else if (!isWeekend(d) && k !== end) run = 0;
+      d = addDays(d, 1);
+    }
+    return best;
+  }
+
+  const WEEK = [
+    { s: 'S', full: 'Segunda' }, { s: 'T', full: 'Terça' }, { s: 'Q', full: 'Quarta' }, { s: 'Q', full: 'Quinta' },
+    { s: 'S', full: 'Sexta' }, { s: 'S', full: 'Sábado' }, { s: 'D', full: 'Domingo' }
+  ];
+  const STATE_TEXT = { trained: 'treinou', future: 'ainda vai chegar', pending: 'hoje, ainda sem treino', rest: 'descanso', missed: 'sem treino', before: 'antes de começar' };
+
+  function renderStreak() {
+    const now = new Date();
+    const cur = currentStreak(history, now);
+    const best = Math.max(bestStreak(history, now), cur);
+    const total = Object.keys(history).length;
+    $('s-num').textContent = String(cur);
+    $('s-label').textContent = cur === 1 ? 'dia de treino seguido' : 'dias de treino seguidos';
+    $('s-meta').textContent = total
+      ? `Melhor sequência: ${best} · Total: ${total} ${total === 1 ? 'treino' : 'treinos'} · Fim de semana não quebra.`
+      : 'Conclui o treino do dia pra começar a sequência. Fim de semana não quebra.';
+    const monday = addDays(now, -((now.getDay() + 6) % 7));
+    const tk = dateKey(now);
+    const sk = startKey();
+    $('s-week').innerHTML = WEEK.map((w, i) => {
+      const d = addDays(monday, i);
+      const k = dateKey(d);
+      let state;
+      if (history[k]) state = 'trained';
+      else if (k > tk) state = 'future';
+      else if (k === tk) state = 'pending';
+      else if (k < sk) state = 'before';
+      else state = isWeekend(d) ? 'rest' : 'missed';
+      const cls = ['s-day', state, isWeekend(d) ? 'we' : '', k === tk ? 'today' : ''].filter(Boolean).join(' ');
+      return `<li class="${cls}" aria-label="${w.full}: ${STATE_TEXT[state]}"><span class="s-dot"></span><span aria-hidden="true">${w.s}</span></li>`;
+    }).join('');
+  }
+
+  function renderFinish() {
+    const done = !!history[todayKey()];
+    finishEl.innerHTML = done
+      ? `<p class="f-done"><span class="f-check" aria-hidden="true"></span>Treino de hoje concluído</p><button type="button" class="link" id="finish-undo">Desfazer</button>`
+      : `<button type="button" class="btn primary wide" id="finish-btn">Concluir treino de hoje</button><p class="f-note">Pode concluir mesmo se pulou algum exercício por causa da lombar.</p>`;
+  }
+
+  function completeToday() {
+    const k = todayKey();
+    if (history[k]) return;
+    history[k] = { plano: DAYS[current].key, em: Date.now() };
+    store.set(KEY.historico, history);
+    renderStreak();
+    renderFinish();
+    const n = currentStreak(history, new Date());
+    toast(n > 1 ? `Treino concluído! ${n} dias de treino seguidos.` : 'Treino concluído! A sequência começou.');
+  }
+
+  function undoToday() {
+    const k = todayKey();
+    if (!history[k]) return;
+    delete history[k];
+    store.set(KEY.historico, history);
+    renderStreak();
+    renderFinish();
+    toast('Conclusão desfeita.');
+  }
+
+  finishEl.addEventListener('click', e => {
+    if (e.target.closest('#finish-btn')) completeToday();
+    else if (e.target.closest('#finish-undo')) undoToday();
+  });
+
+  /* ---------- Carga ---------- */
+  const fmtKg = v => String(v).replace('.', ',');
+  const parseKg = s => {
+    const v = parseFloat(String(s).replace(',', '.').replace(/[^\d.]/g, ''));
+    return Number.isFinite(v) ? v : NaN;
+  };
+  function getLoad(def) {
+    const saved = cargas[def.id];
+    if (isObj(saved) && Number.isFinite(saved.kg)) return saved;
+    return { kg: def.def, start: def.def, updated: null };
+  }
+  function setLoad(def, kg) {
+    const cur = getLoad(def);
+    const v = Math.min(60, Math.max(0, Math.round(kg * 2) / 2));
+    cargas[def.id] = { kg: v, start: cur.start, updated: todayKey() };
+    store.set(KEY.cargas, cargas);
+    return cargas[def.id];
+  }
+  function loadNote(def, l) {
+    if (l.kg === 0) return 'Sem peso por enquanto.';
+    if (l.kg !== l.start) return l.start === 0 ? 'Começou sem peso.' : `Começou com ${fmtKg(l.start)} ${def.unit}.`;
+    return '';
+  }
+  function loadHTML(def) {
+    const l = getLoad(def);
+    return `<div class="load" data-load="${def.id}">` +
+      `<span class="l-label" id="ll-${def.id}">Carga</span>` +
+      `<span class="l-ctrl" role="group" aria-labelledby="ll-${def.id}">` +
+      `<button type="button" class="l-btn" data-step="-1" aria-label="Diminuir carga">−</button>` +
+      `<input type="text" inputmode="decimal" autocomplete="off" class="l-input" id="l-${def.id}" value="${fmtKg(l.kg)}" aria-label="Carga em ${def.unit}">` +
+      `<button type="button" class="l-btn" data-step="1" aria-label="Aumentar carga">+</button>` +
+      `</span><span class="l-unit">${def.unit}</span>` +
+      `<span class="l-note">${esc(loadNote(def, l))}</span></div>`;
+  }
+  function applyLoad(box, kg) {
+    const def = LOADS[box.dataset.load];
+    if (!def) return;
+    const l = setLoad(def, kg);
+    box.querySelector('.l-input').value = fmtKg(l.kg);
+    box.querySelector('.l-note').textContent = loadNote(def, l);
+  }
+
+  /* ---------- Dias ---------- */
+  function dayChecks(key) {
+    if (!isObj(feitos.days[key])) feitos.days[key] = {};
+    return feitos.days[key];
+  }
+
+  function renderTabs() {
+    tabsEl.innerHTML = DAYS.map((d, i) =>
+      `<button type="button" role="tab" id="tab-${d.key}" class="tab${i === todayIdx ? ' today' : ''}" aria-controls="day" data-i="${i}"${i === todayIdx ? ' title="Hoje"' : ''}>` +
+      `<span class="d">${d.short}</span><span class="f">${esc(d.tab)}</span></button>`
+    ).join('');
+  }
+
+  function paintTabs() {
+    tabsEl.querySelectorAll('.tab').forEach((b, i) => {
+      const on = i === current;
+      b.setAttribute('aria-selected', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+  }
+
+  function altHTML(it) {
+    if (!it.easier && !it.harder) return '';
+    const label = it.easier && it.harder ? 'Mais fácil ou mais difícil' : (it.easier ? 'Versão mais fácil' : 'Versão mais difícil');
+    return `<details class="alt"><summary>${label}</summary>` +
+      (it.easier ? `<p><b>Mais fácil:</b> ${esc(it.easier)}</p>` : '') +
+      (it.harder ? `<p><b>Mais difícil:</b> ${esc(it.harder)}</p>` : '') +
+      `</details>`;
+  }
+
+  function itemHTML(it, id, done) {
+    const cid = `c-${DAYS[current].key}-${id}`;
+    return `<li class="item${done ? ' done' : ''}" data-id="${id}">` +
+      `<span class="check"><input type="checkbox" id="${cid}"${done ? ' checked' : ''} aria-label="Feito: ${esc(it.name)}"><span class="box" aria-hidden="true"></span></span>` +
+      `<div class="body"><div class="row"><span class="name">${esc(it.name)}</span><span class="dose">${esc(pick(it.dose))}</span></div>` +
+      (it.how ? `<p class="how">${esc(it.how)}</p>` : '') +
+      (it.load ? loadHTML(it.load) : '') +
+      altHTML(it) +
+      `</div></li>`;
+  }
+
+  function renderDay() {
+    const d = DAYS[current];
+    const dc = dayChecks(d.key);
+    let total = 0;
+    const blocks = d.blocks.map((b, bi) => {
+      const lis = b.items.map((it, ii) => {
+        total++;
+        const id = `${bi}-${ii}`;
+        return itemHTML(it, id, !!dc[id]);
+      }).join('');
+      return `<section class="block" aria-label="${esc(b.title)}">` +
+        `<div class="bhead"><h3>${esc(b.title)}</h3><span class="mins">${esc(pick(b.min))}</span></div>` +
+        (b.note ? `<p class="note">${esc(pick(b.note))}</p>` : '') +
+        `<ol class="items">${lis}</ol></section>`;
+    }).join('');
+    dayEl.setAttribute('aria-labelledby', `tab-${d.key}`);
+    dayEl.innerHTML =
+      `<div class="dhead"><p class="dname">${d.name}</p><h2>${esc(d.title)}</h2><p class="focus">${esc(d.focus)}</p>` +
+      `<div class="prog"><div class="track" aria-hidden="true"><span class="fill" id="fill"></span></div>` +
+      `<span class="count" id="count"></span><button type="button" class="reset" id="reset">Zerar o dia</button></div></div>` +
+      blocks;
+    dayEl.dataset.total = String(total);
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = Number(dayEl.dataset.total) || 0;
+    const done = dayEl.querySelectorAll('.item.done').length;
+    $('fill').style.width = total ? `${Math.round(done / total * 100)}%` : '0%';
+    $('count').textContent = `${done} de ${total} feitos`;
+    return { done, total };
+  }
+
+  function selectDay(i, moveFocus) {
+    current = (i + DAYS.length) % DAYS.length;
+    paintTabs();
+    renderDay();
+    if (moveFocus) $(`tab-${DAYS[current].key}`).focus();
+    const y = anchorEl.getBoundingClientRect().top + window.scrollY;
+    if (window.scrollY > y) {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+    }
+  }
+
+  tabsEl.addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (btn) selectDay(Number(btn.dataset.i), false);
+  });
+  tabsEl.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); selectDay(current + 1, true); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); selectDay(current - 1, true); }
+  });
+
+  dayEl.addEventListener('change', e => {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement)) return;
+    if (t.classList.contains('l-input')) {
+      const box = t.closest('.load');
+      const v = parseKg(t.value);
+      if (Number.isNaN(v)) { t.value = fmtKg(getLoad(LOADS[box.dataset.load]).kg); return; }
+      applyLoad(box, v);
+      return;
+    }
+    if (t.type !== 'checkbox') return;
+    const li = t.closest('.item');
+    if (!li) return;
+    const dc = dayChecks(DAYS[current].key);
+    if (t.checked) dc[li.dataset.id] = true; else delete dc[li.dataset.id];
+    li.classList.toggle('done', t.checked);
+    feitos.date = feitos.date || todayKey();
+    store.set(KEY.feitos, feitos);
+    const p = updateProgress();
+    if (t.checked && p.total && p.done === p.total) completeToday();
+  });
+
+  dayEl.addEventListener('click', e => {
+    const stepBtn = e.target.closest('.l-btn');
+    if (stepBtn) {
+      const box = stepBtn.closest('.load');
+      const def = LOADS[box.dataset.load];
+      const cur = getLoad(def).kg;
+      const dir = Number(stepBtn.dataset.step);
+      const step = dir > 0 ? (cur < 5 ? 0.5 : 1) : (cur <= 5 ? 0.5 : 1);
+      applyLoad(box, cur + dir * step);
+      return;
+    }
+    if (e.target.closest('#reset')) {
+      feitos.days[DAYS[current].key] = {};
+      store.set(KEY.feitos, feitos);
+      renderDay();
+    }
+  });
+
+  dayEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('l-input')) {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+
+  /* ---------- Fase e aviso ---------- */
+  const phaseBtns = document.querySelectorAll('.phase button');
+  function paintPhase() {
+    phaseBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.phase === phase)));
+  }
+  phaseBtns.forEach(b => b.addEventListener('click', () => {
+    phase = b.dataset.phase;
+    store.set(KEY.fase, phase);
+    paintPhase();
+    renderDay();
+  }));
+
+  const careEl = $('care');
+  if (store.get(KEY.aviso, true) === false) careEl.open = false;
+  careEl.addEventListener('toggle', () => store.set(KEY.aviso, careEl.open));
+
+  /* ---------- Virada do dia (app aberto de um dia pro outro) ---------- */
+  let lastKey = todayKey();
+  function refreshIfNewDay() {
+    const k = todayKey();
+    if (k === lastKey) return;
+    lastKey = k;
+    feitos = freshFeitos();
+    store.set(KEY.feitos, feitos);
+    computeToday();
+    if (todayIdx >= 0) current = todayIdx;
+    renderTabs();
+    paintTabs();
+    renderDay();
+    renderStreak();
+    renderFinish();
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshIfNewDay(); });
+  setInterval(refreshIfNewDay, 60000);
+
+  /* ---------- Timer ---------- */
+  const timerEl = $('timer');
+  const display = $('tdisplay');
+  let tick = null;
+  let audio = null;
+  let wakeLock = null;
+  const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  async function keepAwake() {
+    try {
+      if ('wakeLock' in navigator && !wakeLock) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    } catch (e) { wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && tick) keepAwake();
+  });
+
+  function beep() {
+    if (!audio) return;
+    try {
+      const t0 = audio.currentTime;
+      [0, 0.28, 0.56].forEach(off => {
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.0001, t0 + off);
+        gain.gain.exponentialRampToValueAtTime(0.3, t0 + off + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + off + 0.2);
+        osc.connect(gain);
+        gain.connect(audio.destination);
+        osc.start(t0 + off);
+        osc.stop(t0 + off + 0.22);
+      });
+    } catch (e) {}
+  }
+
+  function finishTimer() {
+    clearInterval(tick);
+    tick = null;
+    timerEl.classList.remove('running');
+    timerEl.classList.add('finished');
+    display.textContent = 'Pronto';
+    try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {}
+    beep();
+  }
+
+  function startTimer(sec) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!audio && Ctx) audio = new Ctx();
+      if (audio && audio.state === 'suspended') audio.resume();
+    } catch (e) { audio = null; }
+    keepAwake();
+    clearInterval(tick);
+    const end = Date.now() + sec * 1000;
+    timerEl.classList.add('running');
+    timerEl.classList.remove('finished');
+    display.textContent = fmt(sec);
+    tick = setInterval(() => {
+      const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+      if (left <= 0) finishTimer(); else display.textContent = fmt(left);
+    }, 200);
+  }
+
+  function stopTimer() {
+    clearInterval(tick);
+    tick = null;
+    timerEl.classList.remove('running', 'finished');
+    display.textContent = '0:00';
+  }
+
+  timerEl.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'tstop') stopTimer();
+    else if (btn.dataset.sec) startTimer(Number(btn.dataset.sec));
+  });
+
+  /* ---------- Baixar como app ---------- */
+  const sheet = $('install');
+  const goBtn = $('install-go');
+  const laterBtn = $('install-later');
+  const installLink = $('install-link');
+  const installText = $('install-text');
+  let installPrefs = store.get(KEY.instalacao, {});
+  if (!isObj(installPrefs)) installPrefs = {};
+
+  const mq = q => !!(window.matchMedia && window.matchMedia(q).matches);
+  const isStandalone = () => mq('(display-mode: standalone)') || mq('(display-mode: fullscreen)') || mq('(display-mode: minimal-ui)') || window.navigator.standalone === true;
+  const inFrame = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const ua = navigator.userAgent || '';
+  const isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isTouch = mq('(pointer: coarse)');
+  const TEXT_PROMPT = 'Fica na tela inicial, abre em tela cheia e funciona mesmo sem internet.';
+  const TEXT_STEPS = 'Fica na tela inicial e abre em tela cheia. É só seguir estes passos:';
+
+  if (isStandalone()) {
+    installPrefs.instalado = true;
+    store.set(KEY.instalacao, installPrefs);
+  }
+  const canOffer = !isStandalone() && !inFrame;
+  // "Agora não" segura o aviso automático por 3 dias; o link do rodapé continua lá.
+  const dismissedRecently = () => Number.isFinite(installPrefs.dispensadoEm) && (Date.now() - installPrefs.dispensadoEm) < 3 * 864e5;
+  const autoOffer = canOffer && !dismissedRecently() && !installPrefs.instalado;
+
+  let deferredPrompt = null;
+  let sheetMode = null;
+
+  function showSheet(mode) {
+    if (!canOffer) return;
+    sheetMode = mode;
+    goBtn.hidden = mode !== 'prompt';
+    $('steps-ios').hidden = mode !== 'ios';
+    $('steps-generic').hidden = mode !== 'generic';
+    installText.textContent = mode === 'prompt' ? TEXT_PROMPT : TEXT_STEPS;
+    laterBtn.textContent = mode === 'prompt' ? 'Agora não' : 'Entendi';
+    sheet.hidden = false;
+  }
+  function hideSheet() {
+    sheet.hidden = true;
+    sheetMode = null;
+  }
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!canOffer) return;
+    // O Chrome só manda esse evento quando o app não está instalado (por exemplo, se foi desinstalado).
+    if (installPrefs.instalado) {
+      installPrefs.instalado = false;
+      store.set(KEY.instalacao, installPrefs);
+    }
+    installLink.hidden = false;
+    if (sheetMode || !dismissedRecently()) showSheet('prompt');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installPrefs.instalado = true;
+    store.set(KEY.instalacao, installPrefs);
+    hideSheet();
+    installLink.hidden = true;
+    toast('App instalado. Agora é só abrir pela tela inicial.');
+  });
+
+  async function promptInstall() {
+    if (!deferredPrompt) { showSheet(isIOS ? 'ios' : 'generic'); return; }
+    const evt = deferredPrompt;
+    deferredPrompt = null;
+    hideSheet();
+    try {
+      await evt.prompt();
+      const choice = await evt.userChoice;
+      if (!choice || choice.outcome !== 'accepted') {
+        installLink.hidden = false;
+        installPrefs.dispensadoEm = Date.now();
+        store.set(KEY.instalacao, installPrefs);
+      }
+    } catch (e) {
+      showSheet(isIOS ? 'ios' : 'generic');
+    }
+  }
+
+  goBtn.addEventListener('click', promptInstall);
+  installLink.addEventListener('click', () => {
+    if (deferredPrompt) promptInstall();
+    else showSheet(isIOS ? 'ios' : 'generic');
+  });
+  laterBtn.addEventListener('click', () => {
+    hideSheet();
+    installPrefs.dispensadoEm = Date.now();
+    store.set(KEY.instalacao, installPrefs);
+  });
+
+  if (canOffer) {
+    installLink.hidden = !!installPrefs.instalado;
+    if (autoOffer) {
+      if (isIOS) setTimeout(() => { if (!sheetMode) showSheet('ios'); }, 1200);
+      else setTimeout(() => { if (!sheetMode && isTouch) showSheet(deferredPrompt ? 'prompt' : 'generic'); }, 3500);
+    }
+  }
+
+  if ('serviceWorker' in navigator && !inFrame && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  }
+
+  /* ---------- Início ---------- */
+  store.set(KEY.feitos, feitos);
+  paintPhase();
+  renderTabs();
+  paintTabs();
+  renderDay();
+  renderStreak();
+  renderFinish();
+})();
+</script>
+</body>
+</html>
